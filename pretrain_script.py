@@ -119,12 +119,15 @@ def get_classification_loaders(path,batch_size):
     val_loader = DataLoader(dataset=val_dataset, batch_size=batch_size, shuffle=True, num_workers=2)
     return [train_loader, val_loader, eval_loader]
 
-def dino_pretraining_run(lr,wd,teacher_temp,student_temp,batch_size,epochs,data_loaders,run,num_runs,warmup_epochs):
+def dino_pretraining_run(lr,wd,teacher_temp,student_temp,batch_size,epochs,data_loaders,run,num_runs,extended_head = False):
      pretrain_loader, val_loader, rank_loader, dino_loader = data_loaders
 
      resnet_s = torchvision.models.resnet18()
      backbone_s = nn.Sequential(*list(resnet_s.children())[:-1])
-     proj_head_s = ProjectionHead(512,[2048,2048,],512)
+     if extended_head:
+        proj_head_s = ProjectionHead(512,[2048,2048,2048],512)
+     else:
+        proj_head_s = ProjectionHead(512,[2048,2048],512)
      dino_head_s = DINOHead(512,8192)
      pretrain_model_s = PretrainModel(backbone_s,proj_head_s)
      dino_model_s = DINOModel(backbone_s,proj_head_s,dino_head_s)
@@ -132,7 +135,10 @@ def dino_pretraining_run(lr,wd,teacher_temp,student_temp,batch_size,epochs,data_
 
      resnet_t = torchvision.models.resnet18()
      backbone_t = nn.Sequential(*list(resnet_t.children())[:-1])
-     proj_head_t = ProjectionHead(512,[2048,2048],512)
+     if extended_head:
+        proj_head_t = ProjectionHead(512,[2048,2048,2048],512)
+     else:
+        proj_head_t = ProjectionHead(512,[2048,2048],512)
      dino_head_t = DINOHead(512,8192)
      pretrain_model_t = PretrainModel(backbone_t,proj_head_t)
      dino_model_t = DINOModel(backbone_t,proj_head_t,dino_head_t)
@@ -204,12 +210,15 @@ def dino_pretraining_run(lr,wd,teacher_temp,student_temp,batch_size,epochs,data_
      return rankme, avg_losses, models_t,models_s,backbones_t,backbones_s
 
 
-def vicreg_pretraining_run(lr,weight_decay,eta,lamb,mu,batch_size,epochs,data_loaders,run,num_runs,warmup_epochs):
+def vicreg_pretraining_run(lr,weight_decay,eta,lamb,mu,batch_size,epochs,data_loaders,run,num_runs, extended_head = False):
      pretrain_loader, val_loader, rank_loader,_ = data_loaders
 
-     resnet = torchvision.models.resnet18(pretrained=False)
+     resnet = torchvision.models.resnet18()
      backbone = nn.Sequential(*list(resnet.children())[:-1])
-     proj_head = ProjectionHead(512,[2048,2048],512)
+     if extended_head:
+         proj_head = ProjectionHead(512,[2048,2048,2048],512)
+     else:
+        proj_head = ProjectionHead(512,[2048,2048],512)
      pretrain_model = PretrainModel(backbone,proj_head)
      pretrain_model.to(device)
 
@@ -254,12 +263,15 @@ def vicreg_pretraining_run(lr,weight_decay,eta,lamb,mu,batch_size,epochs,data_lo
 
 
 
-def simclr_pretraining_run(lr,wd,temp,batch_size,epochs,data_loaders,run,num_runs,warmup_epochs):
+def simclr_pretraining_run(lr,wd,temp,batch_size,epochs,data_loaders,run,num_runs, extended_head = False):
      pretrain_loader, val_loader, rank_loader,_ = data_loaders
 
-     resnet = torchvision.models.resnet18(pretrained=False)
+     resnet = torchvision.models.resnet18()
      backbone = nn.Sequential(*list(resnet.children())[:-1])
-     proj_head = ProjectionHead(512,[2048,2048],512)
+     if extended_head:
+         proj_head = ProjectionHead(512,[2048,2048,2048],512)
+     else:
+        proj_head = ProjectionHead(512,[2048,2048],512)
      pretrain_model = PretrainModel(backbone,proj_head)
      pretrain_model.to(device)
 
@@ -303,7 +315,7 @@ def simclr_pretraining_run(lr,wd,temp,batch_size,epochs,data_loaders,run,num_run
      return rankme, avg_losses, models, backbones
 
 
-def dino_pretraining_routine(num_runs = 1,identifier='dino'):
+def dino_pretraining_routine(num_runs = 1,identifier='dino', extended_head = False):
      path = 'pretraining/'+identifier
      model_path = path +'/models'
      Path(model_path).mkdir(parents=True, exist_ok=True)
@@ -317,7 +329,7 @@ def dino_pretraining_routine(num_runs = 1,identifier='dino'):
      lr = 1e-3 #2.5e-4*batch_size/256
 
      epochs = 100
-     warmup_epochs = 10
+     
 
      data_path = 'datasets/imagenette'
      data_loaders = get_pretrain_loaders(data_path,batch_size)
@@ -334,7 +346,7 @@ def dino_pretraining_routine(num_runs = 1,identifier='dino'):
           tps = sample_linear(tps_min,tps_max)
           tpts.append(tpt)
           tpss.append(tps)
-          new_rank_array, new_loss_array, models_t,models_s,backbones_t,backbones_s = dino_pretraining_run(lr,wd,tpt,tps,batch_size,epochs,data_loaders,run,num_runs,warmup_epochs)
+          new_rank_array, new_loss_array, models_t,models_s,backbones_t,backbones_s = dino_pretraining_run(lr,wd,tpt,tps,batch_size,epochs,data_loaders,run,num_runs,extended_head)
           
           epochstring = ['20','40','60','80','100']
           for i in range(len(models_t)):
@@ -354,7 +366,7 @@ def dino_pretraining_routine(num_runs = 1,identifier='dino'):
      with open(path+'/loss.json', 'w') as file:
         json.dump(loss_array, file)
 
-def vicreg_pretraining_routine(num_runs = 1,identifier='vicreg'):
+def vicreg_pretraining_routine(num_runs = 1,identifier='vicreg', extended_head = False):
      path = 'pretraining/'+identifier
      model_path = path +'/models'
      Path(model_path).mkdir(parents=True, exist_ok=True)
@@ -369,7 +381,6 @@ def vicreg_pretraining_routine(num_runs = 1,identifier='vicreg'):
      eta_max = 16
      batch_size = 256 #significantly smaller dataset
      epochs = 100
-     warmup_epochs = 10
 
      data_path = 'datasets/imagenette'
      data_loaders = get_pretrain_loaders(data_path,batch_size)
@@ -390,7 +401,7 @@ def vicreg_pretraining_routine(num_runs = 1,identifier='vicreg'):
           etas.append(eta)
           lambs.append(lamb)
 
-          new_rank_array, new_loss_array, models, backbones = vicreg_pretraining_run(lr,weight_decay,eta,lamb,mu,batch_size,epochs,data_loaders,run,num_runs,warmup_epochs)
+          new_rank_array, new_loss_array, models, backbones = vicreg_pretraining_run(lr,weight_decay,eta,lamb,mu,batch_size,epochs,data_loaders,run,num_runs,extended_head)
           epochstrings = ['20','40','60','80','100']
           for i in range(len(models)):
             torch.save(models[i], run_path+'/'+epochstrings[i]+'model.pth')
@@ -411,7 +422,7 @@ def vicreg_pretraining_routine(num_runs = 1,identifier='vicreg'):
 
      
 
-def simclr_pretraining_routine(num_runs = 1,identifier='simclr'):
+def simclr_pretraining_routine(num_runs = 1,identifier='simclr', extended_head = False):
      path = 'pretraining/'+identifier
      model_path = path +'/models'
      Path(model_path).mkdir(parents=True, exist_ok=True)
@@ -424,7 +435,6 @@ def simclr_pretraining_routine(num_runs = 1,identifier='simclr'):
      temperature_max = 0.5
      batch_size = 256 #significantly smaller dataset
      epochs = 100
-     warmup_epochs = 10
 
      data_path = 'datasets/imagenette'
      data_loaders = get_pretrain_loaders(data_path,batch_size)
@@ -445,7 +455,7 @@ def simclr_pretraining_routine(num_runs = 1,identifier='simclr'):
           wds.append(weight_decay)
           temps.append(temperature)
 
-          new_rank_array, new_loss_array, models, backbones = simclr_pretraining_run(lr,weight_decay,temperature,batch_size,epochs,data_loaders,run,num_runs,warmup_epochs)
+          new_rank_array, new_loss_array, models, backbones = simclr_pretraining_run(lr,weight_decay,temperature,batch_size,epochs,data_loaders,run,num_runs, extended_head)
           epochstrings = ['20','40','60','80','100']
           for i in range(len(models)):
             torch.save(models[i], run_path+'/'+epochstrings[i]+'model.pth')
@@ -742,21 +752,24 @@ def main():
         num_runs = int(sys.argv[2])
         suffix = str(sys.argv[3])
         identifier = 'simclr'+suffix
-        simclr_pretraining_routine(num_runs,identifier)
+        extended_head = bool(sys.argv[4])
+        simclr_pretraining_routine(num_runs,identifier,extended_head)
         print('SIMCLR Pretraining Successful')
 
     if task == 'VICREG':
         num_runs = int(sys.argv[2])
         suffix = str(sys.argv[3])
         identifier = 'vicreg'+suffix
-        vicreg_pretraining_routine(num_runs,identifier)
+        extended_head = bool(sys.argv[4])
+        vicreg_pretraining_routine(num_runs,identifier,extended_head)
         print('VICREG Pretraining Successful')
 
     if task == 'DINO':
         num_runs = int(sys.argv[2])
         suffix = str(sys.argv[3])
         identifier = 'dino'+suffix
-        dino_pretraining_routine(num_runs,identifier)
+        extended_head = bool(sys.argv[4])
+        dino_pretraining_routine(num_runs,identifier,extended_head)
         print('DINO Pretraining Successful')
 
     if task == 'CLASSIFICATION':
