@@ -17,53 +17,9 @@ import numpy as np
 # Losses should be (N x 6 x 20)
 
 
-current_file_path = os.path.abspath(__file__)
-
-vic1 = 'vicf1'
-simclr1 = 'simclrf1'
-dino1 = 'dinof1'
-
-case = vic1
-
-rank_path = case + '/pretraining/rank.json' 
-cifar10acclin_path = case + '/imagenette/linear/val_accs.json'
 
 
 
-# # open the files
-# with open(rank_path, 'r') as file:
-#     ranks = json.load(file)
-
-# with open(cifar10acclin_path, 'r') as file:
-#     accs_cifar = json.load(file)
-
-
-
-# # this filters out the last entry of each (the one trained for 100 epochs)
-# rank = []
-# cifar = []
-
-
-# for i in range(len(ranks)):
-#     rank.append(ranks[i][-1][0])
-
-# for i in range(len(accs_cifar)):
-#     cifar.append(accs_cifar[i][-1])
-
-
-
-
-
-# plt.scatter(rank, cifar)
-# plt.xscale('log')  # Set the x-axis to be logarithmic
-
-# # Set labels and title
-# plt.xlabel('Rank (Logarithmic)')
-# plt.ylabel('Accuracy on Cifar10')
-# plt.title('Scatter Plot with Logarithmic X Axis')
-
-# # Show the plot
-# plt.show()
 
 # open ranks
 with open('simclrf1/pretraining/rank.json', 'r') as file:
@@ -244,9 +200,9 @@ def first_plot():
         axs[0].scatter(ranks_vicf1[:,-1,0], accs_mlp_vicf1_imagenette[:,-1],label='VICReg MLP', marker='^',color = 'cyan')
         axs[0].scatter(ranks_dinof1[:,-1,0], accs_lin_dinof1_imagenette[:,-1],label='DINO Linear', marker='o',color = 'g')
         axs[0].scatter(ranks_dinof1[:,-1,0], accs_mlp_dinof1_imagenette[:,-1],label='DINO MLP', marker='^',color = 'palegreen')
-        axs[0].set_title('IMAGENETTE')
-        axs[0].set_xlabel('Entropic Rank')
-        axs[0].set_ylabel('Validation Accuracy')
+        axs[0].set_title('IMAGENETTE',fontsize=16)
+        axs[0].set_xlabel('Entropic Rank',fontsize=14)
+        axs[0].set_ylabel('Validation Accuracy',fontsize=14)
 
         axs[1].scatter(ranks_simclrf1[:,-1,0], accs_lin_simclrf1_cifar10[:,-1],label='SimCLR Linear', marker='o',color = 'r')
         axs[1].scatter(ranks_simclrf1[:,-1,0], accs_mlp_simclrf1_cifar10[:,-1],label='SimCLR MLP', marker='^',color = 'salmon')
@@ -254,8 +210,8 @@ def first_plot():
         axs[1].scatter(ranks_vicf1[:,-1,0], accs_mlp_vicf1_cifar10[:,-1],label='VICReg MLP', marker='^',color = 'cyan')
         axs[1].scatter(ranks_dinof1[:,-1,0], accs_lin_dinof1_cifar10[:,-1],label='DINO Linear', marker='o',color = 'g')
         axs[1].scatter(ranks_dinof1[:,-1,0], accs_mlp_dinof1_cifar10[:,-1],label='DINO MLP', marker='^',color = 'palegreen')
-        axs[1].set_title('CIFAR10')
-        axs[1].set_xlabel('Entropic Rank')
+        axs[1].set_title('CIFAR10',fontsize=16)
+        axs[1].set_xlabel('Entropic Rank',fontsize=14)
 
 
         axs[2].scatter(ranks_simclrf1[:,-1,0], accs_lin_simclrf1_cifar100[:,-1],label='SimCLR Linear', marker='o',color = 'r')
@@ -264,19 +220,19 @@ def first_plot():
         axs[2].scatter(ranks_vicf1[:,-1,0], accs_mlp_vicf1_cifar100[:,-1],label='VICReg MLP', marker='^',color = 'cyan')
         axs[2].scatter(ranks_dinof1[:,-1,0], accs_lin_dinof1_cifar100[:,-1],label='DINO Linear', marker='o',color = 'g')
         axs[2].scatter(ranks_dinof1[:,-1,0], accs_mlp_dinof1_cifar100[:,-1],label='DINO MLP', marker='^',color = 'palegreen')
-        axs[2].set_title('CIFAR100')
-        axs[2].set_xlabel('Entropic Rank')
+        axs[2].set_title('CIFAR100',fontsize=16)
+        axs[2].set_xlabel('Entropic Rank',fontsize=14)
 
 
         for ax in axs:
             ax.set_xscale('log')
 
         handles, labels = axs[0].get_legend_handles_labels()
-        fig.legend(handles, labels, loc='center left', bbox_to_anchor=(0.1, 0.5), title='Legend')
+        fig.legend(handles, labels, loc='center left', bbox_to_anchor=(0.01, 0.5), title='Model Type',fontsize=14, title_fontsize=14)
 
 
         plt.tight_layout()  # Adjusts subplot parameters to give specified 
-        plt.subplots_adjust(left=0.26,wspace=0.25)
+        plt.subplots_adjust(left=0.21,wspace=0.2)
         plt.show()
 
 def second_plot():
@@ -289,9 +245,9 @@ def second_plot():
         axs[0].scatter(ranks_simclrf1[:,2,0], accs_mlp_simclrf1_imagenette[:,2],label='60 Epochs', marker='o',color = 'b')
         axs[0].scatter(ranks_simclrf1[:,3,0], accs_mlp_simclrf1_imagenette[:,3],label='80 Epochs', marker='o',color = 'cyan')
         axs[0].scatter(ranks_simclrf1[:,4,0], accs_mlp_simclrf1_imagenette[:,4],label='100 Epochs', marker='o',color = 'r')
-        axs[0].set_title('SimCLR')
-        axs[0].set_xlabel('Entropic Rank')
-        axs[0].set_ylabel('Validation Accuracy')
+        axs[0].set_title('SimCLR',fontsize=16)
+        axs[0].set_xlabel('Entropic Rank',fontsize=14)
+        axs[0].set_ylabel('Validation Accuracy',fontsize=14)
 
 
         axs[1].scatter(ranks_vicf1[:,0,0], accs_mlp_vicf1_imagenette[:,0],label='20 Epochs', marker='o',color = 'salmon')
@@ -299,27 +255,28 @@ def second_plot():
         axs[1].scatter(ranks_vicf1[:,2,0], accs_mlp_vicf1_imagenette[:,2],label='60 Epochs', marker='o',color = 'b')
         axs[1].scatter(ranks_vicf1[:,3,0], accs_mlp_vicf1_imagenette[:,3],label='80 Epochs', marker='o',color = 'cyan')
         axs[1].scatter(ranks_vicf1[:,4,0], accs_mlp_vicf1_imagenette[:,4],label='100 Epochs', marker='o',color = 'r')
-        axs[1].set_title('VICReg')
-        axs[1].set_xlabel('Entropic Rank')
+        axs[1].set_title('VICReg',fontsize=16)
+        axs[1].set_xlabel('Entropic Rank',fontsize=14)
 
         axs[2].scatter(ranks_dinof1[:,0,0], accs_mlp_dinof1_imagenette[:,0],label='20 Epochs', marker='o',color = 'salmon')
         axs[2].scatter(ranks_dinof1[:,1,0], accs_mlp_dinof1_imagenette[:,1],label='40 Epochs', marker='o',color = 'g')
         axs[2].scatter(ranks_dinof1[:,2,0], accs_mlp_dinof1_imagenette[:,2],label='60 Epochs', marker='o',color = 'b')
         axs[2].scatter(ranks_dinof1[:,3,0], accs_mlp_dinof1_imagenette[:,3],label='80 Epochs', marker='o',color = 'cyan')
         axs[2].scatter(ranks_dinof1[:,4,0], accs_mlp_dinof1_imagenette[:,4],label='100 Epochs', marker='o',color = 'r')
-        axs[2].set_title('DINO')
-        axs[2].set_xlabel('Entropic Rank')
+        axs[2].set_title('DINO',fontsize=16)
+        axs[2].set_xlabel('Entropic Rank',fontsize=14)
+
         
 
         for ax in axs:
             ax.set_xscale('log')
 
         handles, labels = axs[0].get_legend_handles_labels()
-        fig.legend(handles, labels, loc='center left', bbox_to_anchor=(0.1, 0.5), title='Legend')
+        fig.legend(handles, labels, loc='center left', bbox_to_anchor=(0.01, 0.5), title='Pretraining Epochs',fontsize=14, title_fontsize=14)
 
 
         plt.tight_layout()  # Adjusts subplot parameters to give specified 
-        plt.subplots_adjust(left=0.25,wspace=0.25)
+        plt.subplots_adjust(left=0.2,wspace=0.2)
         plt.show()
 
 def third_plot():
@@ -333,9 +290,9 @@ def third_plot():
         axs[0].scatter(ranks_vicf2[:,-1,0], accs_mlp_vicf2_imagenette[:,-1],label='VICReg Extended', marker='^',color = 'cyan')
         axs[0].scatter(ranks_dinof1[:,-1,0], accs_mlp_dinof1_imagenette[:,-1],label='DINO Base', marker='o',color = 'g')
         axs[0].scatter(ranks_dinof2[:,-1,0], accs_mlp_dinof2_imagenette[:,-1],label='DINO Extended', marker='^',color = 'palegreen')
-        axs[0].set_title('IMAGENETTE')
-        axs[0].set_xlabel('Entropic Rank')
-        axs[0].set_ylabel('Validation Accuracy')
+        axs[0].set_title('IMAGENETTE',fontsize=16)
+        axs[0].set_xlabel('Entropic Rank',fontsize=14)
+        axs[0].set_ylabel('Validation Accuracy',fontsize=14)
 
         axs[1].scatter(ranks_simclrf1[:,-1,0], accs_mlp_simclrf1_cifar10[:,-1],label='SimCLR Base', marker='o',color = 'r')
         axs[1].scatter(ranks_simclrf2[:,-1,0], accs_mlp_simclrf2_cifar10[:,-1],label='SimCLR Extended', marker='^',color = 'salmon')
@@ -343,8 +300,8 @@ def third_plot():
         axs[1].scatter(ranks_vicf2[:,-1,0], accs_mlp_vicf2_cifar10[:,-1],label='VICReg Extended', marker='^',color = 'cyan')
         axs[1].scatter(ranks_dinof1[:,-1,0], accs_mlp_dinof1_cifar10[:,-1],label='DINO Base', marker='o',color = 'g')
         axs[1].scatter(ranks_dinof2[:,-1,0], accs_mlp_dinof2_cifar10[:,-1],label='DINO Extended', marker='^',color = 'palegreen')
-        axs[1].set_title('CIFAR10')
-        axs[1].set_xlabel('Entropic Rank')
+        axs[1].set_title('CIFAR10',fontsize=16)
+        axs[1].set_xlabel('Entropic Rank',fontsize=14)
 
         axs[2].scatter(ranks_simclrf1[:,-1,0], accs_mlp_simclrf1_cifar100[:,-1],label='SimCLR Base', marker='o',color = 'r')
         axs[2].scatter(ranks_simclrf2[:,-1,0], accs_mlp_simclrf2_cifar100[:,-1],label='SimCLR Extended', marker='^',color = 'salmon')
@@ -352,19 +309,19 @@ def third_plot():
         axs[2].scatter(ranks_vicf2[:,-1,0], accs_mlp_vicf2_cifar100[:,-1],label='VICReg Extended', marker='^',color = 'cyan')
         axs[2].scatter(ranks_dinof1[:,-1,0], accs_mlp_dinof1_cifar100[:,-1],label='DINO Base', marker='o',color = 'g')
         axs[2].scatter(ranks_dinof2[:,-1,0], accs_mlp_dinof2_cifar100[:,-1],label='DINO Extended', marker='^',color = 'palegreen')
-        axs[2].set_title('CIFAR100')
-        axs[2].set_xlabel('Entropic Rank')
+        axs[2].set_title('CIFAR100',fontsize=16)
+        axs[2].set_xlabel('Entropic Rank',fontsize=14)
 
 
         for ax in axs:
             ax.set_xscale('log')
 
         handles, labels = axs[0].get_legend_handles_labels()
-        fig.legend(handles, labels, loc='center left', bbox_to_anchor=(0.1, 0.5), title='Legend')
+        fig.legend(handles, labels, loc='center left', bbox_to_anchor=(0.01, 0.5), title='Model Type',fontsize=14, title_fontsize=14)
 
 
         plt.tight_layout()  # Adjusts subplot parameters to give specified 
-        plt.subplots_adjust(left=0.28,wspace=0.25)
+        plt.subplots_adjust(left=0.23,wspace=0.2)
         plt.show()
 
 #rank comparison
@@ -378,17 +335,17 @@ def fourth_plot():
         axs[0].scatter(ranks_simclrf1[:,2,0], ranks_simclrf1[:,2,1],label='60 Epochs', marker='o',color = 'b')
         axs[0].scatter(ranks_simclrf1[:,3,0], ranks_simclrf1[:,3,1],label='80 Epochs', marker='o',color = 'cyan')
         axs[0].scatter(ranks_simclrf1[:,4,0], ranks_simclrf1[:,4,1],label='100 Epochs', marker='o',color = 'r')
-        axs[0].set_title('SimCLR Rank Comparison')
-        axs[0].set_xlabel('Entropic Rank')
-        axs[0].set_ylabel('Robust Rank')
+        axs[0].set_title('SimCLR Rank Comparison',fontsize=16)
+        axs[0].set_xlabel('Entropic Rank',fontsize=14)
+        axs[0].set_ylabel('Robust Rank',fontsize=14)
 
         axs[1].scatter(ranks_vicf1[:,0,0], ranks_vicf1[:,0,1],label='20 Epochs', marker='o',color = 'salmon')
         axs[1].scatter(ranks_vicf1[:,1,0], ranks_vicf1[:,1,1],label='40 Epochs', marker='o',color = 'g')
         axs[1].scatter(ranks_vicf1[:,2,0], ranks_vicf1[:,2,1],label='60 Epochs', marker='o',color = 'b')
         axs[1].scatter(ranks_vicf1[:,3,0], ranks_vicf1[:,3,1],label='80 Epochs', marker='o',color = 'cyan')
         axs[1].scatter(ranks_vicf1[:,4,0], ranks_vicf1[:,4,1],label='100 Epochs', marker='o',color = 'r')
-        axs[1].set_title('VICReg Rank Comparison')
-        axs[1].set_xlabel('Entropic Rank')
+        axs[1].set_title('VICReg Rank Comparison',fontsize=16)
+        axs[1].set_xlabel('Entropic Rank',fontsize=14)
 
 
         axs[2].scatter(ranks_dinof1[:,0,0], ranks_dinof1[:,0,1],label='20 Epochs', marker='o',color = 'salmon')
@@ -396,22 +353,27 @@ def fourth_plot():
         axs[2].scatter(ranks_dinof1[:,2,0], ranks_dinof1[:,2,1],label='60 Epochs', marker='o',color = 'b')
         axs[2].scatter(ranks_dinof1[:,3,0], ranks_dinof1[:,3,1],label='80 Epochs', marker='o',color = 'cyan')
         axs[2].scatter(ranks_dinof1[:,4,0], ranks_dinof1[:,4,1],label='100 Epochs', marker='o',color = 'r')
-        axs[2].set_title('DINO Rank Comparison')
-        axs[2].set_xlabel('Entropic Rank')
+        axs[2].set_title('DINO Rank Comparison',fontsize=16)
+        axs[2].set_xlabel('Entropic Rank',fontsize=14)
 
         # for ax in axs:
         #     ax.set_xscale('log')
         #     ax.set_yscale('log')
 
         handles, labels = axs[0].get_legend_handles_labels()
-        fig.legend(handles, labels, loc='center left', bbox_to_anchor=(0.1, 0.5), title='Legend')
+        fig.legend(handles, labels, loc='center left', bbox_to_anchor=(0.01, 0.5), title='Pretraining Epochs',fontsize=14, title_fontsize=14)
 
 
         plt.tight_layout()  # Adjusts subplot parameters to give specified 
-        plt.subplots_adjust(left=0.25,wspace=0.25)
+        plt.subplots_adjust(left=0.2,wspace=0.2)
         plt.show()
 
-
+def main():
+    first_plot()
+    second_plot()
+    third_plot()
+    fourth_plot()
 
 if __name__ == '__main__':
-    fourth_plot()
+    main()
+    

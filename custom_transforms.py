@@ -4,8 +4,6 @@ import torchvision.transforms as transforms
 
 #Augmentations
 
-#Base inspired from source:
-#https://github.com/Spijkervet/SimCLR/blob/master/simclr/modules/transformations/simclr.py
 class MaxBrightness(object):
     def __call__(self, img):
         enhancer = ImageEnhance.Brightness(img)
@@ -43,6 +41,11 @@ class RandomApply(object):
         return img
 
 
+#Base augmentations inspired from source:
+#https://github.com/Spijkervet/SimCLR/blob/master/simclr/modules/transformations/simclr.py
+#and from the SimCLR assignment
+
+#Transformations from the paper with additional information from 'Bootsstrap your own latent'. https://arxiv.org/abs/2006.07733
 
 class CustomTransforms:
     """

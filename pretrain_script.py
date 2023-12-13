@@ -52,28 +52,8 @@ def download_imagenette(path = 'datasets/imagenette'):
         # Move the contents of the downloaded directory to your desired location
         path.rename(data_dir)
 
-def download_inat18(path='datasets/inat18'):
-    data_transform = transforms.Compose([
-        transforms.Resize((128, 128)),
-        transforms.ToTensor(),
-    ])
 
-    # Download iNaturalist dataset (example for illustration, may not be accurate)
-    inat_dataset = datasets.INaturalist(root=path, version = '2018', transform=data_transform, download=True)
 
-def download_sun397(path='datasets/sun397'):
-    data_transform = transforms.Compose([
-        transforms.Resize((128, 128)),
-        transforms.ToTensor(),
-    ])
-
-    # Download iNaturalist dataset (example for illustration, may not be accurate)
-    sun_dataset = datasets.SUN397(root=path, transform=data_transform, download=True)
-
-def download_datasets():
-    download_imagenette(path='datasets/imagenette')
-    download_inat18(path='datasets/inat18')
-    download_sun397(path='datasets/sun397')
 
 def get_pretrain_loaders(path,batch_size):
      pretrain_dataset = ImageFolder(root=path + '/train', transform=CustomTransforms(is_pretrain=True, is_val=False))
@@ -122,6 +102,8 @@ def get_classification_loaders(path,batch_size):
 def dino_pretraining_run(lr,wd,teacher_temp,student_temp,batch_size,epochs,data_loaders,run,num_runs,extended_head = False):
      pretrain_loader, val_loader, rank_loader, dino_loader = data_loaders
 
+
+    #Architecture information taken from Emerging Properties in Self-Supervised Vision Transformers https://arxiv.org/abs/2104.14294
      resnet_s = torchvision.models.resnet18()
      backbone_s = nn.Sequential(*list(resnet_s.children())[:-1])
      if extended_head:
@@ -148,6 +130,7 @@ def dino_pretraining_run(lr,wd,teacher_temp,student_temp,batch_size,epochs,data_
          param.requires_grad = False
 
      m = 0.9 #center momentum
+     # AdamW imported from pytorch
      optimizer = torch.optim.AdamW(dino_model_s.parameters(), lr=lr, weight_decay=wd)
      criterion = DINOLoss(teacher_temp,student_temp,m,8192)
      criterion.to(device)
@@ -163,6 +146,7 @@ def dino_pretraining_run(lr,wd,teacher_temp,student_temp,batch_size,epochs,data_
 
      lmin = torch.tensor(0.996, dtype=torch.float)
      lmax = torch.tensor(1, dtype=torch.float)
+     #custom Cosine Schedule
      l_schedule = CosineSchedule(lmin,lmax,torch.tensor(epochs,dtype=float))
      l_schedule.to(device)
 
@@ -184,7 +168,7 @@ def dino_pretraining_run(lr,wd,teacher_temp,student_temp,batch_size,epochs,data_
             total_loss += loss.item()
             optimizer.zero_grad()
 
-            # This should only change the student!!!
+           
             loss.backward()
             optimizer.step()
 
@@ -222,8 +206,11 @@ def vicreg_pretraining_run(lr,weight_decay,eta,lamb,mu,batch_size,epochs,data_lo
      pretrain_model = PretrainModel(backbone,proj_head)
      pretrain_model.to(device)
 
+     #vic loss taken from the lightly library
      criterion = lightly_loss.vicreg_loss.VICRegLoss(lambda_param = lamb, mu_param = mu, nu_param = eta) #from lightly
      base_optimizer = torch.optim.SGD(pretrain_model.parameters(), lr=lr, weight_decay=weight_decay)
+
+     #LARS optimizer taken from the torchlars library
      optimizer = torchlars.LARS(optimizer=base_optimizer, trust_coef=0.001)
 
      avg_losses = []
@@ -275,8 +262,11 @@ def simclr_pretraining_run(lr,wd,temp,batch_size,epochs,data_loaders,run,num_run
      pretrain_model = PretrainModel(backbone,proj_head)
      pretrain_model.to(device)
 
+     #NTXentLoss taken from the lightly library
      criterion = lightly_loss.NTXentLoss(temperature=temp)
      base_optimizer = torch.optim.SGD(pretrain_model.parameters(), lr=lr, weight_decay=wd)
+
+     #LARS optimizer taken from the torchlars library
      optimizer = torchlars.LARS(optimizer=base_optimizer, trust_coef=0.001)
 
      avg_losses = []
@@ -326,7 +316,7 @@ def dino_pretraining_routine(num_runs = 1,identifier='dino', extended_head = Fal
      tps_min = 0.1
      tps_max = 0.5
      batch_size = 64 # vram at limit
-     lr = 1e-3 #2.5e-4*batch_size/256
+     lr = 1e-3
 
      epochs = 100
      
@@ -501,6 +491,7 @@ def classification_linear(backbone,train_loader,classes,lr,wd,epochs,run):
     Classifier = ClassModel(backbone,linear_head)
     Classifier.to(device)
 
+    # Crossentropy loss and Adam optimizer from pytorch
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(linear_head.parameters(), lr=lr,weight_decay=wd)
     avg_losses = []
@@ -688,51 +679,6 @@ def classification_routine(name,data,dino):
         json.dump(val_accs_mlp, file)
 
 
-def complete_routine(name,typ,runs):
-    try:
-        download_datasets()
-    except Exception as e:
-        print(f"An error occurred while loading the data: {e}")
-
-    if typ == 'SIMCLR':
-        dino = 0
-        try:
-            simclr_pretraining_routine(runs,name)
-        except Exception as e:
-            print(f"An error occurred while training on SIMCLR: {e}")
-
-    if typ == 'VICREG':
-        dino = 0
-        try:
-            vicreg_pretraining_routine(runs,name)
-        except Exception as e:
-            print(f"An error occurred while training on VICREG: {e}")
-
-    if typ == 'DINO':
-        dino = 1
-        try:
-            dino_pretraining_routine(runs,name)
-        except Exception as e:
-            print(f"An error occurred while training on DINO: {e}")
-
-
-    print('Starting Imagenette Classification')
-    try:
-        classification_routine('imagenette',name,dino)
-    except Exception as e:
-        print(f"An error occurred while classifying on IMAGE: {e}")
-
-    print('Starting INAT Classification')
-    try:
-        classification_routine('inat18',name,dino)
-    except Exception as e:
-        print(f"An error occurred while classifying on INAT: {e}")
-
-    print('Starting SUN Classification')
-    try:
-        classification_routine('sun397',name,dino)
-    except Exception as e:
-        print(f"An error occurred while classifying on SUN: {e}")
 
 def download_cifar():
     data_dir = 'datasets/cifar10'
@@ -780,31 +726,6 @@ def main():
         print('Classification Successfull')
 
 
-    if task == 'testing':
-        classification_routine(name,data,dino)
-
-    if task == 'DOWNLOAD':
-        download_datasets()
-        print('Download Complete.')
-
-    if task == 'SRUTI':
-        name = 'simclr_run1test'
-        typ = 'SIMCLR'
-        runs = 15
-        complete_routine(name,typ,runs)
-
-    if task == 'CANER':
-        name = 'vicreg_run1'
-        typ = 'VICREG'
-        runs = 15
-        complete_routine(name,typ,runs)
-
-    if task == 'MARKUS':
-        name = 'dino_run1'
-        typ = 'DINO'
-        runs = 10
-        complete_routine(name,typ,runs)
-
     if task == 'CIFAR':
         download_cifar()
 
@@ -817,14 +738,6 @@ def main():
             print(data[i]+' successfull.')
         print('Classification Successfull')
 
-    if task == 'CIFAR100':
-        name = str(sys.argv[2])
-        data = 'cifar100'
-        dino = int(sys.argv[3])
-        classification_routine(name,data,dino)
-        print(data+' successfull.')
-        print('Classification Successfull')
-        
 
 
 

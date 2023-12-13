@@ -7,7 +7,7 @@ import random
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-### From: Emerging Properties in Self-Supervised Vision Transformers
+### From: Emerging Properties in Self-Supervised Vision Transformers https://arxiv.org/abs/2104.14294 
 class DINOLoss(nn.Module):
     def __init__(self, tpt=1.0,tps=1.0,m=0.9,out_dim=8192):
         super(DINOLoss, self).__init__()
@@ -32,11 +32,13 @@ class DINOLoss(nn.Module):
                     continue
                 loss += self.HDino(output_t[i],output_s[j])
                 
-        # Assuming C results in forcing the output to be more uniform, i.e. mean over each dim
         self.C = self.m*self.C + (1-self.m)*torch.mean(torch.stack([output.mean(dim=0) for output in output_t]),dim=0)
 
         return loss
 
+
+#After the documentation in RankME https://arxiv.org/abs/2210.02885
+#returns entropic rank and robust rank
 def RankME(model,dataloader):
     # Pass the entire dataset through the model
     all_outputs = []
@@ -77,6 +79,7 @@ def sample_linear(min,max):
 def sample_log(min,max):
      rand = random.uniform(np.log(min),np.log(max))
      return np.exp(rand)
+
 
 class CosineSchedule(nn.Module):
     def __init__(self, min=1.0,max=1.0,tot_epochs=100):
