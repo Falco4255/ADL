@@ -1,11 +1,17 @@
 Code and Results of DD2412 Group 11: Markus Pietschner and Caner Ulug
 
 The results are structured as follows:
+
 'Name of Pretraining objective' + 'f1' for the base pretrain model or + 'f2' for the extended pretrain model
+
 -> pretraining
+
 --> loss, rank and sampled hyperparamters for every run
+
 -> cifar10/cifar100/imagentte
+
 -->linear/mlp
+
 ---> losses and train/val accuracies for the classification tasks using the pretrained models
 
 How to use the python files:
